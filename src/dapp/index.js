@@ -15,7 +15,12 @@ import './flightsurety.css';
             console.log(error,result);
             display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
         });
-    
+
+        // show registered airlines
+        display('Airlines', 'List of available airlines', [ { label: 'Airline', error: error, value: contract.getAvailableAirlines()} ]);
+        // contract.getAvailableAirlines((error, result) => {
+        //     display('Airlines', 'List of available airlines', [ { label: 'Airline', error: error, value: result} ]);
+        // })
 
         // User-submitted transaction
         DOM.elid('submit-oracle').addEventListener('click', () => {
@@ -25,14 +30,15 @@ import './flightsurety.css';
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
             });
         })
-    
+
     });
-    
+
 
 })();
 
 
 function display(title, description, results) {
+    console.log(results);
     let displayDiv = DOM.elid("display-wrapper");
     let section = DOM.section();
     section.appendChild(DOM.h2(title));
@@ -46,10 +52,3 @@ function display(title, description, results) {
     displayDiv.append(section);
 
 }
-
-
-
-
-
-
-

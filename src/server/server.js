@@ -9,13 +9,22 @@ let web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('htt
 web3.eth.defaultAccount = web3.eth.accounts[0];
 let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
 
-
+console.log("Starting");
 flightSuretyApp.events.OracleRequest({
     fromBlock: 0
   }, function (error, event) {
-    if (error) console.log(error)
-    console.log(event)
+    if (error) {
+        console.log(error);
+    } else {
+        console.log(event);
+    }
+
 });
+
+// if (!error) {
+//     console.log("Block number: " + event.blockNumber);
+//     console.log("We wrote: " + event.args.firstname);
+// }
 
 const app = express();
 app.get('/api', (req, res) => {
@@ -25,5 +34,3 @@ app.get('/api', (req, res) => {
 })
 
 export default app;
-
-
