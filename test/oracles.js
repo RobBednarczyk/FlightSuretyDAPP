@@ -11,16 +11,16 @@ contract('Oracles', async (accounts) => {
     // Watch contract events
     //let events = instanceApp.allEvents();
     //
-    var instanceApp = await FlightSuretyApp.deployed();
-    var fee = await instanceApp.REGISTRATION_FEE.call();
-    var airlineFee = await web3.utils.toWei("10", "ether");
-    var event = instanceApp.OracleRequest();
-    console.log(event);
-    event.watch(function(error, result) {
-        if(!error) {
-            console.log(result);
-        }
-    })
+    // var instanceApp = await FlightSuretyApp.deployed();
+    // var fee = await instanceApp.REGISTRATION_FEE.call();
+    // var airlineFee = await web3.utils.toWei("10", "ether");
+    // var event = instanceApp.OracleRequest();
+    // console.log(event);
+    // event.watch(function(error, result) {
+    //     if(!error) {
+    //         console.log(result);
+    //     }
+    // })
     // instanceApp.events.OracleRequest({
     //     fromBlock: 0
     // }, function (error, event) {
