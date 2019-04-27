@@ -149,7 +149,7 @@ contract('Flight Surety Tests', async (accounts) => {
         let departureDate = new Date(dateString).getTime();
         //departureDate = departureDate 1000;
         //console.log(departureDate);
-        await instanceApp.registerFlight("FR109", departureDate, {from:airline1});
+        await instanceApp.registerFlight("FR109", "WAW", "LON", departureDate, {from:airline1});
         let numFlights = await instanceApp.howManyFlights.call();
         //console.log(Number(numFlights));
         assert.equal(numFlights, 1);
@@ -158,10 +158,10 @@ contract('Flight Surety Tests', async (accounts) => {
         // the flight code is correct
         assert.equal(flightInfo[0], "FR109");
         // the flight is registered but not insured yet
-        assert.equal(flightInfo[1], true);
-        assert.equal(flightInfo[2], false);
-        assert.equal(flightInfo[4], departureDate);
-        assert.equal(flightInfo[5], airline1);
+        assert.equal(flightInfo[3], true);
+        assert.equal(flightInfo[4], false);
+        assert.equal(flightInfo[6], departureDate);
+        assert.equal(flightInfo[7], airline1);
     });
 
     it("checks that the funded airline who registered a flight can insure it", async() => {
@@ -182,13 +182,13 @@ contract('Flight Surety Tests', async (accounts) => {
         // console.log(Number(flightInfo[4]));
         // console.log(new Date(Number(flightInfo[4])));
         // console.log(flightInfo[5], " Airline?");
-        assert.equal(flightInfo[1], true);
-        assert.equal(flightInfo[2], false);
-        assert.equal(flightInfo[4], departureDate);
-        assert.equal(flightInfo[5], airline1);
+        assert.equal(flightInfo[3], true);
+        assert.equal(flightInfo[4], false);
+        assert.equal(flightInfo[6], departureDate);
+        assert.equal(flightInfo[7], airline1);
         await instanceApp.insureFlight(flightHash, {from:airline1});
         flightInfo = await instanceApp.getFlight(flightHash);
-        assert.equal(flightInfo[2], true);
+        assert.equal(flightInfo[4], true);
 
     });
 
@@ -223,7 +223,7 @@ contract('Flight Surety Tests', async (accounts) => {
         // send and process the oracles' decision
         await instanceApp.processFlightStatus(airline1, "FR109", departureDate, 20);
         let flightInfo = await instanceApp.getFlight(flightHash);
-        assert.equal(flightInfo[3], 20);
+        assert.equal(flightInfo[5], 20);
         let afterBalance = await instanceApp.getInsuranceBalance.call(passenger1, flightHash);
         assert.equal(afterBalance, prevBalance * 1.5);
     });

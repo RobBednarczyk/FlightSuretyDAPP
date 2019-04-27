@@ -27,6 +27,8 @@ contract FlightSuretyData {
 
     struct Flight {
         string code;
+        string from;
+        string to;
         bool isRegistered;
         bool isInsured;
         uint8 statusCode;
@@ -162,7 +164,7 @@ contract FlightSuretyData {
     *
     */
     function registerAirline(address _airlineAddress, string _airlineName) external requireAirline {
-        require(!airlines[_airlineAddress].isRegistered);
+        require(!airlines[_airlineAddress].isRegistered, "Airline must not be already registered");
         if (numAirlines < 4) {
             Airline memory newAirline = Airline({
                 airlineAddress: _airlineAddress,
@@ -186,13 +188,15 @@ contract FlightSuretyData {
         }
     }
 
-    function registerFlight(string _flightCode, uint256 _departureDate) external requireAirline {
+    function registerFlight(string _flightCode, string _origin, string _destination, uint256 _departureDate) external requireAirline {
         require(airlines[tx.origin].isFunded);
         bytes32 flightHash = getFlightKey(tx.origin, _flightCode, _departureDate);
         // the flight cannot be registered before
         require(!flights[flightHash].isRegistered);
         Flight memory newFlight = Flight({
             code: _flightCode,
+            from: _origin,
+            to: _destination,
             isRegistered: true,
             isInsured: false,
             statusCode: 0,
@@ -355,9 +359,9 @@ contract FlightSuretyData {
         //airlines[msg.sender].name = "testName";
     }
 
-    function getFlight(bytes32 _flightHash) external view returns(string memory, bool, bool, uint8, uint256, address) {
+    function getFlight(bytes32 _flightHash) external view returns(string memory, string memory, string memory, bool, bool, uint8, uint256, address) {
         Flight memory flight = flights[_flightHash];
-        return (flight.code, flight.isRegistered, flight.isInsured, flight.statusCode, flight.departureDate, flight.airline);
+        return (flight.code, flight.from, flight.to, flight.isRegistered, flight.isInsured, flight.statusCode, flight.departureDate, flight.airline);
     }
 
     function getFlightKey(address airline, string memory flightCode, uint256 timestamp)

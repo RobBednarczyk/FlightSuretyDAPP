@@ -4,17 +4,28 @@ body {
     background-size: cover;
 }
 
-.container {
+.container div {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.container:first-of-type {
     margin-top: 400px;
+}
+
+.container {
+    margin-top: 20px;
     background-color: #000;
     opacity: 0.9;
     color: #fff;
     padding: 40px;
 }
 
-.top-20 {
-    margin-top: 20px;
+#regAirlineFunc, #fundAirlineFunc {
+    display: flex;
+    flex-direction: column;
 }
+
 
 h5 {
     color: #999999;

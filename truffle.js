@@ -2,13 +2,13 @@ var HDWalletProvider = require("truffle-hdwallet-provider");
 // mnemonic - truffle develop
 //var mnemonic = "height clarify tiny cancel travel sauce debris strike fame swamp spoil damage";
 // mnemonic - ganache
-var mnemonic = "vapor cram grunt gentle excite giraffe cabbage pudding man miracle bread curious";
+var mnemonic = "ugly flip nurse good wish lamp silent decide normal female broom among";
 
 module.exports = {
   networks: {
     development: {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "http://127.0.0.1:7545/", 0, 30);
+        return new HDWalletProvider(mnemonic, "http://127.0.0.1:7545/", 0, 40);
       },
       network_id: '*',
       // gas limit in ganache is 6721975

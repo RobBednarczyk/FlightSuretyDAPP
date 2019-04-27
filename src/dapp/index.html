@@ -19,13 +19,59 @@
             <span class="navbar-toggler-icon"></span>
         </button>
     </nav>
-
     <main class="container">
-
+        <div id="contractOwner" class="ownerInfo">
+            <h2>Contract owner:</h2>
+        </div>
+    </main>
+    <main class="container">
         <div id="display-wrapper" class="top-20">
         </div>
+    </main>
+
+    <main class="container">
+        <div class="userInfoBox">
+            <div class="form-group">
+                <label for="selAddress">Select sender address for airline functions:</label>
+                <select id="selAddress" class="form-control">
+                </select>
+            </div>
+            <h2>Current Address:</h2>
+            <p id="currentAddress"></p>
+        </div>
+    </main>
+    <main class="container">
+        <div>
+            <h2>Airline functions:</h2>
+            <div id="regAirlineFunc">
+                <label for ="airlineReg-address">Airline (address)</label>
+                <select id="airlineReg-address">
+                </select>
+                <btn class="btn btn-primary" id="register-airline">Register airline</btn>
+            </div>
+            <div id="fundAirlineFunc">
+                <label for ="airlineFund-address">Airline (address)</label>
+                <select id="airlineFund-address">
+                </select>
+                <btn class="btn btn-primary" id="fund-airline">Fund airline</btn>
+            </div>
+            <div>
+                <btn class="btn btn-primary" id="show-airlines">Show airlines</btn>
+                <div id="showRegisteredAirlines">
+                </div>
+            </div>
+
+        </div>
+    </main>
+    <main class="container">
+        <!-- <div id="airlines-list">
+        </div> -->
         <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            <h2>Get flight status:</h2>
+            <div>
+                <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            </div>
+
         </div>
     </main>
 
