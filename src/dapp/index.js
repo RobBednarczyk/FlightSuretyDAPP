@@ -56,24 +56,16 @@ import './flightsurety.css';
                                     ];
             let numAirlines = await contract.howManyAirlines();
             console.log(Number(numAirlines));
-            console.log(initialAirlineNames.length);
+            //console.log(initialAirlineNames.length);
             try {
                 await contract.registerAirline(owner, contract.airlines[1], initialAirlineNames[0]);
                 console.log(`Airline ${initialAirlineNames[0]} is being registered...`);
-            } catch(error) {
-                console.log("There was an error");
-                console.log(error);
-            }
-            try {
                 await contract.registerAirline(owner, contract.airlines[2], initialAirlineNames[1]);
                 console.log(`Airline ${initialAirlineNames[1]} is being registered...`);
-            } catch(error) {
-                console.log("There was an error");
-                console.log(error);
-            }
-            try {
                 await contract.registerAirline(owner, contract.airlines[3], initialAirlineNames[2]);
                 console.log(`Airline ${initialAirlineNames[2]} is being registered...`);
+                numAirlines = await contract.howManyAirlines();
+                console.log(Number(numAirlines));
             } catch(error) {
                 console.log("There was an error");
                 console.log(error);
@@ -82,8 +74,7 @@ import './flightsurety.css';
             // for(let c = 0; c < initialAirlineNames.length; c++) {
             //
             // }
-            numAirlines = await contract.howManyAirlines();
-            console.log(Number(numAirlines));
+
         })();
 
         // add the selector options with all the airlines
@@ -149,6 +140,7 @@ import './flightsurety.css';
             </tr>`;
             table.innerHTML = tableHeaders;
             let numAirlines = await contract.howManyAirlines();
+            console.log(Number(numAirlines));
             for (let c = 0; c < numAirlines; c++) {
                 let airlineAddress = contract.airlines[c];
                 let airlineInfo = await contract.getAirline(airlineAddress);

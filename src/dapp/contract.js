@@ -85,7 +85,7 @@ export default class Contract {
 
     async registerAirline(senderAddress, airlineAddress, airlineName) {
         let self = this;
-        return self.flightSuretyApp.methods
+        return await self.flightSuretyApp.methods
             .registerAirline(airlineAddress, airlineName)
             .send({from: senderAddress, gas:1000000});
     }
