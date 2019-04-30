@@ -220,17 +220,35 @@ import {flightCodes} from "./flightData.js";
                 let flightDeptHour = document.getElementById("flightHour").value;
                 let flightDeptMinute = document.getElementById("flightMinute").value;
 
-                let departureDate = new Date(flightDeptDay + "T" + flightDeptHour + ":" + flightMinute + ":00Z");
-                console.log(departureDate);
+                let departureDate = new Date(flightDeptDay + "T" + flightDeptHour + ":" + flightDeptMinute + ":00Z");
+                //console.log(flightDeptDay + "T" + flightDeptHour + ":" + flightDeptMinute + ":00Z");
+                departureDate = departureDate.getTime();
+                //console.log(departureDate);
+                console.log(airlineAddress, " Airline address");
+                console.log(flightCode, " flight code");
+                console.log(flightOrigin, " origin");
+                console.log(flightDestination, " destination");
+                console.log(departureDate, " dept date");
                 try {
                     await contract.registerFlight(airlineAddress, flightCode, flightOrigin, flightDestination, departureDate);
                 } catch(err) {
-                    console.log(error);
+                    console.log(err);
                 }
 
             });
         })();
 
+        (async() => {
+            let showFlightsBtn = document.getElementById("show-flights");
+            showFlightsBtn.addEventListener("click", async function() {
+                try {
+                    let numFlights = await contract.howManyFlights();
+                    alert(`There is/are currently ${numFlights} flight(s) registered`);
+                } catch(err) {
+                    console.log(err);
+                }
+            });
+        })();
 
         (async() => {
             let showAirlinesBtn = document.getElementById("show-airlines");

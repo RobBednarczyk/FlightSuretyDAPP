@@ -97,9 +97,15 @@ export default class Contract {
         let self = this;
         return await self.flightSuretyApp.methods
             .registerFlight(flightCode, flightOrigin, flightDestination, departureDate)
-            .send({from:airline});
+            .send({from:airline, gas: 500000});
     }
 
+    async howManyFlights() {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .howManyFlights()
+            .call();
+    }
 
     async getContractBalance() {
         let self = this;
