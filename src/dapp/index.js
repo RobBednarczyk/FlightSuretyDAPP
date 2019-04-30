@@ -2,6 +2,7 @@
 import DOM from './dom';
 import Contract from './contract';
 import './flightsurety.css';
+import {flightCodes} from "./flightData.js";
 
 
 (async() => {
@@ -12,7 +13,7 @@ import './flightsurety.css';
 
     let contract = new Contract('localhost', () => {
 
-
+        // add onfo about the owner of the contract
         (async() => {
             let owner = contract.owner;
             try {
@@ -42,12 +43,21 @@ import './flightsurety.css';
                     ownerInfoList.appendChild(listElement);
                 }
                 contractOwnerElement.appendChild(ownerInfoList);
+                let showBalanceBtn = document.createElement("button");
+                showBalanceBtn.innerHTML = "Show contract balance";
+                showBalanceBtn.setAttribute("class", "btn btn-primary");
+                showBalanceBtn.addEventListener("click", async function() {
+                    let currentBalance = await contract.getContractBalance();
+                    alert(`Current contract balance is: ${currentBalance / 10**18} ether`);
+                });
+                contractOwnerElement.appendChild(showBalanceBtn);
+
             } catch(e) {
                 console.log(e);
             }
         })();
 
-        // register all the airlines from the initial list
+        // register all the airlines from the initial list - do it only once
         (async() => {
             var owner = contract.owner;
             let initialAirlineNames = ["Beta airlines",
@@ -57,27 +67,22 @@ import './flightsurety.css';
             let numAirlines = await contract.howManyAirlines();
             console.log(Number(numAirlines));
             //console.log(initialAirlineNames.length);
-            try {
-                await contract.registerAirline(owner, contract.airlines[1], initialAirlineNames[0]);
-                console.log(`Airline ${initialAirlineNames[0]} is being registered...`);
-                await contract.registerAirline(owner, contract.airlines[2], initialAirlineNames[1]);
-                console.log(`Airline ${initialAirlineNames[1]} is being registered...`);
-                await contract.registerAirline(owner, contract.airlines[3], initialAirlineNames[2]);
-                console.log(`Airline ${initialAirlineNames[2]} is being registered...`);
+            if (numAirlines < 4) {
+                for(let c = 0; c < initialAirlineNames.length; c++) {
+                    try {
+                        await contract.registerAirline(owner, contract.airlines[c+1], initialAirlineNames[c]);
+                        console.log(`Airline ${initialAirlineNames[c]} is being registered...`);
+                    } catch(error) {
+                        console.log("There was an error");
+                        console.log(error);
+                    }
+                }
                 numAirlines = await contract.howManyAirlines();
                 console.log(Number(numAirlines));
-            } catch(error) {
-                console.log("There was an error");
-                console.log(error);
             }
-
-            // for(let c = 0; c < initialAirlineNames.length; c++) {
-            //
-            // }
-
         })();
 
-        // add the selector options with all the airlines
+        // add the selector options with all the airlines to the airline registration form
         (async() => {
             let selectAirlineAddress = document.getElementById("selAddress");
             let airlines = contract.airlines;
@@ -96,7 +101,7 @@ import './flightsurety.css';
         // add the selector options with all the users
 
         (async() => {
-            let allUsers = contract.airlines.concat(contract.passengers).concat(contract.users);
+            let allUsers = contract.allAccounts;
             let airlineRegAddressElement = document.getElementById("airlineReg-address");
             //let airlineFundAddressElement = document.getElementById("airlineFund-address");
             for (let c = 0; c < allUsers.length; c++) {
@@ -109,7 +114,7 @@ import './flightsurety.css';
         })();
 
         (async() => {
-            let allUsers = contract.airlines.concat(contract.passengers).concat(contract.users);
+            let allUsers = contract.allAccounts;
             //let airlineRegAddressElement = document.getElementById("airlineReg-address");
             let airlineFundAddressElement = document.getElementById("airlineFund-address");
             for (let c = 0; c < allUsers.length; c++) {
@@ -122,8 +127,134 @@ import './flightsurety.css';
         })();
 
         (async() => {
+            let allUsers = contract.allAccounts;
+            let passengerAddressElement = document.getElementById("selPassengerAddress");
+            //let airlineFundAddressElement = document.getElementById("airlineFund-address");
+            for (let c = 0; c < allUsers.length; c++) {
+                let newOption = document.createElement("option");
+                newOption.setAttribute("value", allUsers[c]);
+                newOption.innerHTML = `${c}: ${allUsers[c]}`;
+                passengerAddressElement.appendChild(newOption);
+            }
+            passengerAddressElement.addEventListener("change", async function() {
+                let passengerPlaceholderElement = document.getElementById("currentPassengerAddress");
+                passengerPlaceholderElement.innerHTML = passengerAddressElement.value;
+            });
+        })();
+
+        (async() => {
+            let flightDataKeys = Object.keys(flightCodes);
+            let flightOriginElement = document.getElementById("flightOrigin");
+            let flightDestinationElement = document.getElementById("flightDestination");
+            for (let c = 0; c < flightDataKeys.length; c++) {
+                let newOption = document.createElement("option");
+                newOption.setAttribute("value", flightDataKeys[c]);
+                newOption.innerHTML = flightDataKeys[c];
+                flightOriginElement.appendChild(newOption);
+                newOption = document.createElement("option");
+                newOption.innerHTML = flightDataKeys[c];
+                flightDestinationElement.appendChild(newOption);
+            }
+
+            flightOriginElement.addEventListener("change", () => {
+                let originCodeElement = document.getElementById("originCode");
+                originCodeElement.innerHTML = flightCodes[flightOriginElement.value];
+            });
+
+            flightDestinationElement.addEventListener("change", () => {
+                let destinationCodeElement = document.getElementById("destinationCode");
+                destinationCodeElement.innerHTML = flightCodes[flightDestinationElement.value];
+            });
+
+        })();
+
+        (async() => {
+            let flightDeptDateElement = document.getElementById("flightDepartureDay");
+            flightDeptDateElement.addEventListener("change", () => {
+                alert(flightDeptDateElement.value);
+            })
+        })();
+
+        // fill in the hour and minute selectors - register flight functionality
+        (async() => {
+            let hourElem = document.getElementById("flightHour");
+            let minuteElem = document.getElementById("flightMinute");
+            for (let c = 0; c < 24; c++) {
+                let newOption = document.createElement("option");
+                if (c < 10) {
+                    newOption.setAttribute("value", `0${c}`);
+                    newOption.innerHTML = `0${c}`;
+                } else {
+                    newOption.setAttribute("value", c);
+                    newOption.innerHTML = c;
+                }
+                hourElem.appendChild(newOption);
+            }
+            for (let c = 0; c < 60; c++) {
+                let newOption = document.createElement("option");
+                if (c < 10) {
+                    newOption.setAttribute("value", `0${c}`);
+                    newOption.innerHTML = `0${c}`;
+                } else {
+                    newOption.setAttribute("value", c);
+                    newOption.innerHTML = c;
+                }
+                minuteElem.appendChild(newOption);
+            }
+        })();
+
+        // end: adding select options
+
+        // add the register flight functionality
+
+        (async() => {
+            let regFlightBtn = document.getElementById("reg-flight");
+            regFlightBtn.addEventListener("click", async function() {
+                let airlineAddress = document.getElementById("selAddress").value;
+
+                let flightCode = document.getElementById("flightCode").value;
+                let flightOrigin = document.getElementById("flightOrigin").value;
+                let flightDestination = document.getElementById("flightDestination").value;
+
+                let flightDeptDay = document.getElementById("flightDepartureDay").value;
+                let flightDeptHour = document.getElementById("flightHour").value;
+                let flightDeptMinute = document.getElementById("flightMinute").value;
+
+                let departureDate = new Date(flightDeptDay + "T" + flightDeptHour + ":" + flightMinute + ":00Z");
+                console.log(departureDate);
+                try {
+                    await contract.registerFlight(airlineAddress, flightCode, flightOrigin, flightDestination, departureDate);
+                } catch(err) {
+                    console.log(error);
+                }
+
+            });
+        })();
+
+
+        (async() => {
             let showAirlinesBtn = document.getElementById("show-airlines");
             showAirlinesBtn.addEventListener("click", showAirlines);
+        })();
+
+        // add the 'register airline functionality'
+        (() => {
+            let registerAirlineBtn = document.getElementById("register-airline");
+            registerAirlineBtn.addEventListener("click", async function() {
+                let senderAirlineAddr = document.getElementById("selAddress").value;
+                let newAirlineAddress = document.getElementById("airlineReg-address").value;
+                let newAirlineName = document.getElementById("airlineName").value;
+                console.log(senderAirlineAddr);
+                console.log(newAirlineAddress);
+                console.log(newAirlineName);
+                try {
+                    await contract.registerAirline(senderAirlineAddr, newAirlineAddress, newAirlineName);
+                    contract.airlines.push(newAirlineAddress);
+                    console.log(contract.airlines);
+                } catch(error) {
+                    console.log(error);
+                }
+            });
         })();
 
         async function showAirlines() {
@@ -141,6 +272,7 @@ import './flightsurety.css';
             table.innerHTML = tableHeaders;
             let numAirlines = await contract.howManyAirlines();
             console.log(Number(numAirlines));
+            console.log(contract.airlines);
             for (let c = 0; c < numAirlines; c++) {
                 let airlineAddress = contract.airlines[c];
                 let airlineInfo = await contract.getAirline(airlineAddress);
@@ -162,9 +294,11 @@ import './flightsurety.css';
                     let voteBtn = document.createElement("button");
                     voteBtn.innerHTML = "Cast vote!";
             		//detailBtn.setAttribute("id", i+1);
-            		voteBtn.addEventListener("click", function() {
+            		voteBtn.addEventListener("click", async function() {
                         // contract.owner is a placeholder --- TO CHANGE
-                        contract.castVote(airlineAddress, contract.owner);
+                        let sender = document.getElementById("selAddress").value;
+                        await contract.castVote(airlineAddress, sender);
+                        alert("Vote cast!");
                     });
                     tabledata5.appendChild(voteBtn);
                     tableRow.appendChild(tabledata5);
@@ -173,6 +307,25 @@ import './flightsurety.css';
             }
             airlinesDisplayElement.appendChild(table);
         };
+
+        // async function showFlights() {
+        //
+        // }
+
+        // add the fund airline function to a button
+        (async() => {
+            let fundBtn = document.getElementById("fund-airline");
+            fundBtn.addEventListener("click", async function() {
+                let selectAirlineAddress = document.getElementById("selAddress").value;
+                let airlineToBeFunded = document.getElementById("airlineFund-address").value;
+                try {
+                    alert(`The airline ${airlineToBeFunded} is about to be funded`);
+                    await contract.fundAirline(airlineToBeFunded);
+                } catch(error) {
+                    console.log(error);
+                }
+            })
+        })();
 
 
 

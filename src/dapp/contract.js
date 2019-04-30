@@ -13,36 +13,33 @@ export default class Contract {
         this.airlines = [];
         this.passengers = [];
         this.users = [];
-        this.currentAccount = null;
+        this.allAccounts = [];
     }
 
-    initialize(callback) {
+    async initialize(callback) {
 
         // let account = await web3.eth.getCoinbase();
         // this.currentAccount = account;
         // console.log(account);
-
-        this.web3.eth.getAccounts((error, accts) => {
-
+        try {
+            let accts = await this.web3.eth.getAccounts();
+            this.allAccounts = accts;
             this.owner = accts[0];
-            //console.log(accts);
-            // the owner is an airline from default
-            this.airlines.push(this.owner);
             let counter = 1;
-
-
-            while(this.airlines.length < 4) {
-                let account = accts[counter++]
-                // registerAirline(this.owner, account, initialAirlineNames[counter-2], (error, result) => {
-                //     if (error) {
-                //         console.log(error);
-                //     } else if (result) {
-                //         console.log(result);
-                //     }
-                // });
-                this.airlines.push(account);
+            let numAirlines = await this.howManyAirlines();
+            console.log(numAirlines);
+            if (numAirlines == 1) {
+                this.airlines.push(this.owner);
+                while(this.airlines.length < 4) {
+                    this.airlines.push(accts[counter++]);
+                }
+            } else {
+                for (let c = 0; c < numAirlines; c++) {
+                    let airlineInfo = await this.getAirlineByNum(c);
+                    this.airlines.push(airlineInfo[0]);
+                    counter++
+                }
             }
-            console.log(this.airlines);
 
             while(this.passengers.length < 5) {
                 this.passengers.push(accts[counter++]);
@@ -51,32 +48,30 @@ export default class Contract {
             while(accts.length - counter > 0) {
                 this.users.push(accts[counter++]);
             }
-            // console.log(accts);
-
-            // console.log(this.passengers);
-            // console.log(this.users);
-            //console.log(this.airlines);
+            console.log(this.airlines);
             callback();
-        });
+        } catch(error) {
+            console.log(error);
+        }
     }
 
-    // getAirline(airlineAddress, callback) {
-    //     let self = this;
-    //     self.flightSuretyApp.methods
-    //         .getAirline(airlineAddress)
-    //         .call({from:self.owner}, callback);
-    // }
     async getAirline(airlineAddress) {
         let self = this;
         let airline = await self.flightSuretyApp.methods.getAirline(airlineAddress).call();
         return airline;
-    };
+    }
+
+    async getAirlineByNum(airlineNum) {
+        let self = this;
+        let airline = await self.flightSuretyApp.methods.getAirlineByNum(airlineNum).call();
+        return airline;
+    }
 
     async howManyAirlines() {
         let self = this;
         let numAirlines = await self.flightSuretyApp.methods.howManyAirlines().call();
         return numAirlines;
-    };
+    }
 
     async castVote(airlineAddress, sender) {
         let self = this;
@@ -87,7 +82,30 @@ export default class Contract {
         let self = this;
         return await self.flightSuretyApp.methods
             .registerAirline(airlineAddress, airlineName)
-            .send({from: senderAddress, gas:1000000});
+            .send({from: senderAddress, gas:500000});
+    }
+
+    async fundAirline(airlineAddress) {
+        let self = this;
+        let airlineFee = await self.web3.utils.toWei("10", "ether");
+        return await self.flightSuretyApp.methods
+            .fundAirline()
+            .send({from:airlineAddress, value:airlineFee});
+    }
+
+    async registerFlight(airline, flightCode, flightOrigin, flightDestination, departureDate) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .registerFlight(flightCode, flightOrigin, flightDestination, departureDate)
+            .send({from:airline});
+    }
+
+
+    async getContractBalance() {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .getContractBalance()
+            .call();
     }
 
     // registerAirline(senderAddress, airlineAddress, airlineName, callback) {

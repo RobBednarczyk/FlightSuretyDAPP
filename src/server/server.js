@@ -19,6 +19,7 @@ flightSuretyApp.events.OracleRequest({
         console.log(error);
     } else {
         console.log(event);
+        console.log(event.returnValues[2]);
     }
 
 });

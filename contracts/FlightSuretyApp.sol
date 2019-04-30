@@ -137,6 +137,10 @@ contract FlightSuretyApp {
         return flightSuretyData.getAirline(_airlineAddress);
     }
 
+    function getAirlineByNum(uint airlineNum) external view returns(address, string memory, bool, bool, address[]) {
+        return flightSuretyData.getAirlineByNum(airlineNum);
+    }
+
     function castVote(address _airlineAddress) public {
         flightSuretyData.castVote(_airlineAddress);
     }
@@ -165,6 +169,10 @@ contract FlightSuretyApp {
 
     function getFlight(bytes32 _flightHash) public view returns(string memory, string memory, string memory, bool, bool, uint8, uint256, address) {
         return flightSuretyData.getFlight(_flightHash);
+    }
+
+    function getFlightByNum(uint flightNum) external view returns(string memory, string memory, string, bool, bool, uint8, uint256, address, address[]) {
+        return flightSuretyData.getFlightByNum(flightNum);
     }
 
     function insureFlight(bytes32 _flightHash) public {
@@ -431,6 +439,7 @@ contract FlightSuretyData {
     function howManyFlights() external view returns(uint);
     function getContractBalance() external view returns(uint);
     function getAirline(address _airlineAddress) external view returns(address, string memory, bool, bool, address[]);
+    function getAirlineByNum(uint airlineNum) external view returns(address, string memory, bool, bool, address[]);
     function fundAirline(address airlineAddress) external payable;
     function castVote(address _airlineAddress) public;
     function howManyVotes(address _airlineAddress) external view returns(uint);
@@ -440,6 +449,7 @@ contract FlightSuretyData {
     function insureFlight(bytes32 _flightHash) external;
     function isInsured(address _airlineAddress, address _passengerAddress, string _flightCode, uint departureDate) public view returns(bool);
     function getFlight(bytes32 _flightHash) external view returns(string memory, string memory, string memory, bool, bool, uint8, uint256, address);
+    function getFlightByNum(uint flightNum) external view returns(string memory, string memory, string, bool, bool, uint8, uint256, address, address[]);
     function buyInsurance(address _airlineAddress, uint departureDate, string flightCode) external payable;
     function getInsuranceBalance(address _passengerAddress, bytes32 _flightHash) external view returns(uint);
     function setInsuranceBalance(address _passengerAddress, bytes32 _flightHash, uint newVal) external;

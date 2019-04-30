@@ -353,6 +353,11 @@ contract FlightSuretyData {
         return (airline.airlineAddress, airline.name, airline.isRegistered, airline.isFunded, airline.multicalls);
     }
 
+    function getAirlineByNum(uint airlineNum) external view returns(address, string memory, bool, bool, address[]) {
+        Airline memory airline = airlinesList[airlineNum];
+        return (airline.airlineAddress, airline.name, airline.isRegistered, airline.isFunded, airline.multicalls);
+    }
+
     function fundAirline(address _airlineAddress) external payable requireAirline {
         require(msg.value == 10 ether, "The initial airline fee is equal to 10 ether");
         airlines[_airlineAddress].isFunded = true;
@@ -362,6 +367,11 @@ contract FlightSuretyData {
     function getFlight(bytes32 _flightHash) external view returns(string memory, string memory, string memory, bool, bool, uint8, uint256, address) {
         Flight memory flight = flights[_flightHash];
         return (flight.code, flight.from, flight.to, flight.isRegistered, flight.isInsured, flight.statusCode, flight.departureDate, flight.airline);
+    }
+
+    function getFlightByNum(uint flightNum) external view returns(string memory, string memory, string, bool, bool, uint8, uint256, address, address[]) {
+        Flight memory flight = flightsList[flightNum];
+        return (flight.code, flight.from, flight.to, flight.isRegistered, flight.isInsured, flight.statusCode, flight.departureDate, flight.airline, flight.insuredPassengers);
     }
 
     function getFlightKey(address airline, string memory flightCode, uint256 timestamp)
