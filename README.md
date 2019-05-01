@@ -9,6 +9,7 @@ This repository contains Smart Contract code in Solidity (using Truffle), tests 
 Users are requested to run ganache blockchain on their local machines
 and replace the `mnemonic` variable value in the truffle.js file with
 the generated string from ganache.
+The parameters in the code require at least 40 accounts in ganache.
 
 To install, download or clone the repo, then:
 
