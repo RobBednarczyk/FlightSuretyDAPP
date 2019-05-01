@@ -349,6 +349,7 @@ import {flightCodes} from "./flightData.js";
 
         // add the show flights functionality
         async function showFlights() {
+            let currentPassenger = document.getElementById("selPassengerAddress").value;
             let numFlights = await contract.howManyFlights();
             alert(`There are ${numFlights} flight(s) registered`);
             let flightDisplayElement = document.getElementById("showRegisteredFlights");
@@ -413,7 +414,7 @@ import {flightCodes} from "./flightData.js";
                         try {
                             let flightCode = flightInfo[0];
                             let departureDate = flightInfo[6];
-                            await contract.getFlightStatus(airlineAddress, flightCode, departureDate);
+                            await contract.getFlightStatus(currentPassenger, airlineAddress, flightCode, departureDate);
                             alert(`Fetching status of the flight ${flightCode}`);
                         } catch(err) {
                             console.log(flightCode);

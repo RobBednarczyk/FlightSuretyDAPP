@@ -192,7 +192,7 @@ contract FlightSuretyData {
         require(airlines[tx.origin].isFunded);
         bytes32 flightHash = getFlightKey(tx.origin, _flightCode, _departureDate);
         // the flight cannot be registered before
-        require(!flights[flightHash].isRegistered);
+        require(!flights[flightHash].isRegistered, "The flight is already registered");
         Flight memory newFlight = Flight({
             code: _flightCode,
             from: _origin,

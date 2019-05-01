@@ -49,10 +49,26 @@ export default class Contract {
                 this.users.push(accts[counter++]);
             }
             console.log(this.airlines);
+
+            // add the event watchers
+            // this.flightSuretyApp.events.OracleReport({
+            //     fromBlock: 0
+            // }, function (error, event) {
+            //     if (error) {
+            //         console.log(error);
+            //     } else {
+            //         console.log("Airline: ", event.returnValues[0]);
+            //         console.log("FlightCode: ", event.returnValues[1]);
+            //         console.log("Departure date: ", new Date(Number(event.returnValues[2])).toGMTString());
+            //         console.log("StatusCode: ", event.returnValues[3]);
+            //     }
+            // });
+
             callback();
         } catch(error) {
             console.log(error);
         }
+
     }
 
     async getAirline(airlineAddress) {
@@ -97,7 +113,7 @@ export default class Contract {
         let self = this;
         return await self.flightSuretyApp.methods
             .registerFlight(flightCode, flightOrigin, flightDestination, departureDate)
-            .send({from:airline, gas: 500000});
+            .send({from:airline, gas: 1000000});
     }
 
     async howManyFlights() {
@@ -175,11 +191,11 @@ export default class Contract {
             .send({from:userAddress});
     }
 
-    async getFlightStatus(airlineAddress, flightCode, departureDate) {
+    async getFlightStatus(passengerAddress, airlineAddress, flightCode, departureDate) {
         let self = this;
         return await self.flightSuretyApp.methods
             .fetchFlightStatus(airlineAddress, flightCode, departureDate)
-            .call();
+            .send({from:passengerAddress, gas:500000});
     }
 
     async getInsuranceBalance(passengerAddress, flightKey) {
