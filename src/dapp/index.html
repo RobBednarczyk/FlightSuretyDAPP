@@ -23,6 +23,19 @@
         <div id="contractOwner" class="ownerInfo">
             <h2>Contract owner:</h2>
         </div>
+        <div>
+            <h2>Operational status</h2>
+            <em><p id="opStatusPlaceholder"></p></em>
+        </div>
+        <div>
+            <h2>Set operating status</h2>
+            <label for="setOpStat">Only contract owner:</label>
+            <select id="setOpStat" class="form-control">
+                <option value="true">True</option>
+                <option value="false">False</option>
+            </select>
+            <btn class="btn btn-primary" id="setStatus">Set status</btn>
+        </div>
     </main>
     <main class="container">
         <div id="display-wrapper" class="top-20">
@@ -97,11 +110,22 @@
             </div>
             <h2>Current passenger address:</h2>
             <p id="currentPassengerAddress"></p>
+            <div>
+                <label for="premiumVal">Insurance premium: (0 ether < value <= 1 ether)</label>
+                <input type="text" id="premiumVal">
+            </div>
         </div>
 
         <div>
             <btn class="btn btn-primary" id="show-flights">Show flights</btn>
             <div id="showRegisteredFlights">
+            </div>
+        </div>
+
+        <div>
+            <h2>Passenger insured flights></h2>
+            <btn class="btn btn-primary" id="showInsuredFlights">Show insured flights</btn>
+            <div id="insuredFlightsBox">
             </div>
         </div>
     </main>

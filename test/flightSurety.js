@@ -186,7 +186,8 @@ contract('Flight Surety Tests', async (accounts) => {
         assert.equal(flightInfo[4], false);
         assert.equal(flightInfo[6], departureDate);
         assert.equal(flightInfo[7], airline1);
-        await instanceApp.insureFlight(flightHash, {from:airline1});
+        //await instanceApp.insureFlight(flightHash, {from:airline1});
+        await instanceApp.insureFlight("FR109", departureDate);
         flightInfo = await instanceApp.getFlight(flightHash);
         assert.equal(flightInfo[4], true);
 
@@ -200,7 +201,7 @@ contract('Flight Surety Tests', async (accounts) => {
         let departureDate = new Date(dateString).getTime();
         let flightHash = await instanceApp.getFlightKey.call(airline1, "FR109", departureDate);
         let flightInfo = await instanceApp.getFlight(flightHash);
-        let insuranceFee = await web3.utils.toWei("1", "ether");
+        let insuranceFee = await web3.utils.toWei("0.5", "ether");
         await instanceApp.buyInsurance(airline1, departureDate, "FR109", {from: passenger1, value: insuranceFee});
         let isInsured = await instanceApp.isInsured(airline1, passenger1, "FR109", departureDate);
         assert.equal(isInsured, true);
@@ -241,7 +242,7 @@ contract('Flight Surety Tests', async (accounts) => {
         let passengerBalanceAfter = await web3.eth.getBalance(passenger1);
         console.log(passengerBalanceBefore, " Before");
         console.log(passengerBalanceAfter, " After");
-        assert.isAbove(Number(passengerBalanceAfter - passengerBalanceBefore), Number(web3.utils.toWei("1", "ether")));
+        assert.isAbove(Number(passengerBalanceAfter - passengerBalanceBefore), Number(web3.utils.toWei("0.5", "ether")));
     });
 
 

@@ -107,6 +107,60 @@ export default class Contract {
             .call();
     }
 
+    async getFlight(flightKey) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .getFlight(flightKey)
+            .call();
+    }
+
+    async getFlightByNum(flightNum) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .getFlightByNum(flightNum)
+            .call();
+    }
+
+    async getFlightKey(airlineAddress, flightCode, departureDate) {
+        let self = this;
+        let flightKey = await self.flightSuretyApp.methods
+            .getFlightKey(airlineAddress, flightCode, departureDate)
+            .call();
+        return flightKey;
+    }
+        // return await self.flightSuretyApp.methods
+        //     .getFlightKey(airlineAddress, flightCode, departureDate)
+        //     .call();
+    //}
+
+    async insureFlight(airlineSender, flightCode, departureDate) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .insureFlight(flightCode, departureDate)
+            .send({from:airlineSender});
+    }
+
+    async buyInsurance(passengerAddress, airlineAddress, departureDate, flightCode, premium) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .buyInsurance(airlineAddress, departureDate, flightCode)
+            .send({from:passengerAddress, value:premium, gas:500000});
+    }
+
+    async getInsuredFlights(passengerAddress, index) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .getInsuredFlights(passengerAddress, index)
+            .call();
+    }
+
+    async getInsuredKeysLength(passengerAddress) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .getInsuredKeysLength(passengerAddress)
+            .call();
+    }
+
     async getContractBalance() {
         let self = this;
         return await self.flightSuretyApp.methods
@@ -114,6 +168,33 @@ export default class Contract {
             .call();
     }
 
+    async setOpStatus(userAddress, mode) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .setOperatingStatus(mode)
+            .send({from:userAddress});
+    }
+
+    async getFlightStatus(airlineAddress, flightCode, departureDate) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .fetchFlightStatus(airlineAddress, flightCode, departureDate)
+            .call();
+    }
+
+    async getInsuranceBalance(passengerAddress, flightKey) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .getInsuranceBalance(passengerAddress, flightKey)
+            .call();
+    }
+
+    async payOut(passengerAddress, flightKey, amount) {
+        let self = this;
+        return await self.flightSuretyApp.methods
+            .payOut(flightKey, amount)
+            .send({from:passengerAddress});
+    }
     // registerAirline(senderAddress, airlineAddress, airlineName, callback) {
     //     let self = this;
     //     self.flightSuretyApp.methods
@@ -123,26 +204,33 @@ export default class Contract {
     //         });
     // }
 
-    isOperational(callback) {
-       let self = this;
-       self.flightSuretyApp.methods
+    async getOpStatus() {
+        let self = this;
+        return await self.flightSuretyApp.methods
             .isOperational()
-            .call({ from: self.owner}, callback);
+            .call();
     }
 
-    fetchFlightStatus(flight, callback) {
-        let self = this;
-        let payload = {
-            airline: self.airlines[0],
-            flight: flight,
-            timestamp: Math.floor(Date.now() / 1000)
-        }
-        self.flightSuretyApp.methods
-            .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
-            .send({ from: self.owner}, (error, result) => {
-                callback(error, payload);
-            });
-    }
+    // isOperational(callback) {
+    //    let self = this;
+    //    self.flightSuretyApp.methods
+    //         .isOperational()
+    //         .call({ from: self.owner}, callback);
+    // }
+
+    // fetchFlightStatus(flight, callback) {
+    //     let self = this;
+    //     let payload = {
+    //         airline: self.airlines[0],
+    //         flight: flight,
+    //         timestamp: Math.floor(Date.now() / 1000)
+    //     }
+    //     self.flightSuretyApp.methods
+    //         .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
+    //         .send({ from: self.owner}, (error, result) => {
+    //             callback(error, payload);
+    //         });
+    // }
 
     // async showAirlines() {
     //     let self = this;

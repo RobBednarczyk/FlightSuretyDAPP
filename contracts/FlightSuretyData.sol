@@ -88,7 +88,7 @@ contract FlightSuretyData {
     */
     modifier requireContractOwner()
     {
-        require(msg.sender == contractOwner, "Caller is not contract owner");
+        require(tx.origin == contractOwner, "Caller is not contract owner");
         _;
     }
 
@@ -163,7 +163,7 @@ contract FlightSuretyData {
     *      Can only be called from FlightSuretyApp contract
     *
     */
-    function registerAirline(address _airlineAddress, string _airlineName) external requireAirline {
+    function registerAirline(address _airlineAddress, string _airlineName) external requireAirline requireIsOperational {
         require(!airlines[_airlineAddress].isRegistered, "Airline must not be already registered");
         if (numAirlines < 4) {
             Airline memory newAirline = Airline({
@@ -188,7 +188,7 @@ contract FlightSuretyData {
         }
     }
 
-    function registerFlight(string _flightCode, string _origin, string _destination, uint256 _departureDate) external requireAirline {
+    function registerFlight(string _flightCode, string _origin, string _destination, uint256 _departureDate) external requireAirline requireIsOperational {
         require(airlines[tx.origin].isFunded);
         bytes32 flightHash = getFlightKey(tx.origin, _flightCode, _departureDate);
         // the flight cannot be registered before
@@ -209,10 +209,17 @@ contract FlightSuretyData {
         flights[flightHash] = newFlight;
     }
 
-    function insureFlight(bytes32 _flightHash) external requireAirline {
+    /*function insureFlight(bytes32 _flightHash) external requireAirline {
         //bytes32 flightHash = getFlightKey(tx.origin, _flightCode, _departureDate);
         require(flights[_flightHash].airline == tx.origin);
         Flight storage flightToUpdate = flights[_flightHash];
+        flightToUpdate.isInsured = true;
+    }*/
+
+    function insureFlight(string _flightCode, uint256 _departureDate) external requireAirline requireIsOperational {
+        bytes32 flightHash = getFlightKey(tx.origin, _flightCode, _departureDate);
+        require(flights[flightHash].airline == tx.origin);
+        Flight storage flightToUpdate = flights[flightHash];
         flightToUpdate.isInsured = true;
     }
 
@@ -238,11 +245,11 @@ contract FlightSuretyData {
     }
 
     // get the current insurance fund balance
-    function getContractBalance() external view returns(uint) {
+    function getContractBalance() external requireIsOperational view returns(uint) {
         return address(this).balance;
     }
 
-    function castVote(address _airlineAddress) public requireAirline {
+    function castVote(address _airlineAddress) public requireAirline requireIsOperational {
         // check if the airline has already voted
         require(!alreadyVoted(tx.origin, _airlineAddress));
         // check if the airline that is being voted on is not registered yet
@@ -289,7 +296,7 @@ contract FlightSuretyData {
                     payable
                     notAirline
     {
-        require(!isInsured(_airlineAddress, tx.origin, flightCode, departureDate));
+        require(!isInsured(_airlineAddress, tx.origin, flightCode, departureDate), "User already bought insurance for this flight");
         require(msg.value <= 1 ether && msg.value > 0 ether);
         bytes32 flightHash = getFlightKey(_airlineAddress, flightCode, departureDate);
         insuredFlights[tx.origin].push(flightHash);
@@ -310,12 +317,12 @@ contract FlightSuretyData {
         insuredBalance[_passengerAddress][_flightHash] = newVal;
     }
 
-    function updateFlightStatus(bytes32 _flightHash, uint8 newStatus) external {
+    function updateFlightStatus(bytes32 _flightHash, uint8 newStatus) external requireIsOperational {
         Flight storage flightToUpdate = flights[_flightHash];
         flightToUpdate.statusCode = newStatus;
     }
 
-    function updateInsuredBalance(bytes32 _flightHash) external {
+    function updateInsuredBalance(bytes32 _flightHash) external requireIsOperational {
         Flight storage flightToUpdate = flights[_flightHash];
         for (uint c = 0; c < flightToUpdate.insuredPassengers.length; c++) {
             address insured = flightToUpdate.insuredPassengers[c];
@@ -337,9 +344,9 @@ contract FlightSuretyData {
      *  @dev Transfers eligible payout funds to insuree
      *
     */
-    function payOut(bytes32 _flightHash, uint amount) external {
+    function payOut(bytes32 _flightHash, uint amount) external requireIsOperational {
         require(insuredBalance[tx.origin][_flightHash] >= amount, "Insufficient funds");
-        insuredBalance[tx.origin][_flightHash].sub(amount);
+        insuredBalance[tx.origin][_flightHash] = insuredBalance[tx.origin][_flightHash].sub(amount);
         tx.origin.transfer(amount);
     }
 
@@ -369,9 +376,18 @@ contract FlightSuretyData {
         return (flight.code, flight.from, flight.to, flight.isRegistered, flight.isInsured, flight.statusCode, flight.departureDate, flight.airline);
     }
 
-    function getFlightByNum(uint flightNum) external view returns(string memory, string memory, string, bool, bool, uint8, uint256, address, address[]) {
+    function getFlightByNum(uint flightNum) external view returns(string memory, string memory, string memory, bool, bool, uint8, uint256, address, address[]) {
         Flight memory flight = flightsList[flightNum];
         return (flight.code, flight.from, flight.to, flight.isRegistered, flight.isInsured, flight.statusCode, flight.departureDate, flight.airline, flight.insuredPassengers);
+    }
+
+    // added getInsured flights by passenger address
+    function getInsuredFlights(address _passengerAddress, uint _index) external view returns(bytes32) {
+        return insuredFlights[_passengerAddress][_index];
+    }
+
+    function getInsuredKeysLength(address _passengerAddress) external view returns(uint256) {
+        return insuredFlights[_passengerAddress].length;
     }
 
     function getFlightKey(address airline, string memory flightCode, uint256 timestamp)

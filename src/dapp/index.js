@@ -57,6 +57,26 @@ import {flightCodes} from "./flightData.js";
             }
         })();
 
+        (async() => {
+            let setOpStatBtn = document.getElementById("setStatus");
+            setOpStatBtn.addEventListener("click", async function() {
+                let opMode = document.getElementById("setOpStat").value;
+                opMode = (opMode == "true");
+                try {
+                    console.log(contract.owner);
+                    await contract.setOpStatus(contract.owner, opMode);
+                    alert(`Changing operational status to ${opMode}`);
+                    let opStatusPlaceholder = document.getElementById("opStatusPlaceholder");
+                    let currentStatus = await contract.getOpStatus();
+                    console.log(currentStatus);
+                    opStatusPlaceholder.innerHTML = currentStatus;
+                } catch(err) {
+                    console.log(err);
+                    alert("There has been an error");
+                }
+            });
+        })();
+
         // register all the airlines from the initial list - do it only once
         (async() => {
             var owner = contract.owner;
@@ -240,14 +260,15 @@ import {flightCodes} from "./flightData.js";
 
         (async() => {
             let showFlightsBtn = document.getElementById("show-flights");
-            showFlightsBtn.addEventListener("click", async function() {
-                try {
-                    let numFlights = await contract.howManyFlights();
-                    alert(`There is/are currently ${numFlights} flight(s) registered`);
-                } catch(err) {
-                    console.log(err);
-                }
-            });
+            // showFlightsBtn.addEventListener("click", async function() {
+            //     try {
+            //         let numFlights = await contract.howManyFlights();
+            //         alert(`There is/are currently ${numFlights} flight(s) registered`);
+            //     } catch(err) {
+            //         console.log(err);
+            //     }
+            // });
+            showFlightsBtn.addEventListener("click", showFlights);
         })();
 
         (async() => {
@@ -313,7 +334,7 @@ import {flightCodes} from "./flightData.js";
                     voteBtn.innerHTML = "Cast vote!";
             		//detailBtn.setAttribute("id", i+1);
             		voteBtn.addEventListener("click", async function() {
-                        // contract.owner is a placeholder --- TO CHANGE
+
                         let sender = document.getElementById("selAddress").value;
                         await contract.castVote(airlineAddress, sender);
                         alert("Vote cast!");
@@ -326,9 +347,236 @@ import {flightCodes} from "./flightData.js";
             airlinesDisplayElement.appendChild(table);
         };
 
-        // async function showFlights() {
-        //
-        // }
+        // add the show flights functionality
+        async function showFlights() {
+            let numFlights = await contract.howManyFlights();
+            alert(`There are ${numFlights} flight(s) registered`);
+            let flightDisplayElement = document.getElementById("showRegisteredFlights");
+            flightDisplayElement.innerHTML = "";
+
+            let table = document.createElement("table");
+            let tableHeaders = `
+            <tr><th>Airline</th>
+            <th>Flight Code</th>
+            <th>From</th>
+            <th>To</th>
+            <th>departureDate</th>
+            <th>insureFlight (airlines)</th>
+            <th>Status Code</th>
+            <th>buyInsurance (passengers)</th>
+            <th>Fetch status</th>
+            </tr>`;
+            table.innerHTML = tableHeaders;
+
+            for (let c = 0; c < numFlights; c++) {
+                let flightInfoTemp = await contract.getFlightByNum(c);
+                let airlineAddress = flightInfoTemp[7];
+                let flightCode = flightInfoTemp[0];
+                let departureDate = flightInfoTemp[6];
+
+                let flightKey = await contract.getFlightKey(airlineAddress, flightCode, departureDate);
+                //console.log(airlineAddress);
+                let airlineInfo = await contract.getAirline(airlineAddress);
+                let airlineName = airlineInfo[1];
+
+                let flightInfo = await contract.getFlight(flightKey);
+
+                let tableRow = document.createElement("tr");
+                let tabledata1 = document.createElement("td");
+                tabledata1.innerHTML = airlineName;
+                let tabledata2 = document.createElement("td");
+                tabledata2.innerHTML = flightInfo[0];
+                let tabledata3 = document.createElement("td");
+                tabledata3.innerHTML = flightInfo[1];
+                let tabledata4 = document.createElement("td");
+                tabledata4.innerHTML = flightInfo[2];
+                let tabledata5 = document.createElement("td");
+                //tabledata5.innerHTML = new Date(flightInfo[6]).toGMTString();
+                //console.log(Number(flightInfo[6]));
+                tabledata5.innerHTML = new Date(Number(flightInfo[6])).toGMTString();
+
+                tableRow.appendChild(tabledata1);
+                tableRow.appendChild(tabledata2);
+                tableRow.appendChild(tabledata3);
+                tableRow.appendChild(tabledata4);
+                tableRow.appendChild(tabledata5);
+
+                let tabledata6 = document.createElement("td");
+                let tabledata8 = document.createElement("td");
+                let tabledata9 = document.createElement("td");
+                console.log(flightInfo[4]);
+                if (flightInfo[4]) {
+                    tabledata6.innerHTML = "Insured";
+                    let fetchStatusBtn = document.createElement("button");
+                    fetchStatusBtn.innerHTML = "Get flight status";
+                    fetchStatusBtn.addEventListener("click", async function() {
+                        try {
+                            let flightCode = flightInfo[0];
+                            let departureDate = flightInfo[6];
+                            await contract.getFlightStatus(airlineAddress, flightCode, departureDate);
+                            alert(`Fetching status of the flight ${flightCode}`);
+                        } catch(err) {
+                            console.log(flightCode);
+                            alert(`There has been an error`);
+                        }
+                    });
+                    tabledata9.appendChild(fetchStatusBtn);
+
+
+                    let buyInsuranceBtn = document.createElement("button");
+                    buyInsuranceBtn.innerHTML = "Buy insurance";
+                    buyInsuranceBtn.addEventListener("click", async function() {
+                        let passengerAddress = document.getElementById("selPassengerAddress").value;
+                        let insurancePremium = document.getElementById("premiumVal").value;
+                        insurancePremium = await contract.web3.utils.toWei(insurancePremium, "ether");
+                        let flightCode = flightInfo[0];
+                        let departureDate = flightInfo[6];
+                        console.log(passengerAddress);
+                        console.log(insurancePremium);
+                        console.log(flightCode);
+                        console.log(departureDate);
+                        try {
+                            await contract.buyInsurance(
+                                passengerAddress,
+                                airlineAddress,
+                                departureDate,
+                                flightCode,
+                                insurancePremium);
+                            alert(`Insurance for the flight ${flightCode} is being processed`);
+                        } catch(err) {
+                            console.log(err);
+                            alert("There has been an error");
+                        }
+                    });
+                    tabledata8.appendChild(buyInsuranceBtn);
+
+                } else {
+                    let insureFlightBtn = document.createElement("button");
+                    insureFlightBtn.innerHTML = "Insure Flight";
+                    insureFlightBtn.addEventListener("click", async function() {
+                        let airlineSender = document.getElementById("selAddress").value;
+                        console.log(airlineSender);
+                        let flightCode = flightInfo[0];
+                        console.log(flightCode);
+                        let departureDate = Number(flightInfo[6]);
+                        console.log(departureDate, typeof departureDate);
+                        // let flightKey = await contract.getFlightKey(airlineSender, flightCode, departureDate);
+                        // flightKey = await contract.web3.utils.asciiToHex(flightKey);
+                        // console.log(typeof flightKey);
+                        try {
+                            await contract.insureFlight(airlineSender, flightCode, departureDate);
+                            alert(`Flight ${flightCode} is being processed`);
+                        } catch(err) {
+                            console.log(err);
+                            alert("There has been an error");
+                        }
+                    });
+                    tabledata6.appendChild(insureFlightBtn);
+                }
+                tableRow.appendChild(tabledata6);
+
+
+                let tabledata7 = document.createElement("td");
+                let statusCode = flightInfo[5];
+                tabledata7.innerHTML = statusCode;
+                tableRow.appendChild(tabledata7);
+
+
+
+                tableRow.appendChild(tabledata8);
+                tableRow.appendChild(tabledata9);
+                table.appendChild(tableRow);
+            }
+            flightDisplayElement.appendChild(table);
+        }
+
+        async function showInsuredFlights() {
+            let passengerAddress = document.getElementById("selPassengerAddress").value;
+            let numFlightsInsured = await contract.getInsuredKeysLength(passengerAddress);
+            if (numFlightsInsured == 0) {
+                alert(`There are no flights insured by the passenger ${passengerAddress}`);
+            }
+            console.log("Flights insured, ", numFlightsInsured);
+
+            let insuredFlightsBox = document.getElementById("insuredFlightsBox");
+            insuredFlightsBox.innerHTML = "";
+            let table = document.createElement("table");
+            let tableHeaders = `
+            <tr><th>Airline</th>
+            <th>Flight Code</th>
+            <th>From</th>
+            <th>To</th>
+            <th>departureDate</th>
+            <th>Status Code</th>
+            <th>Insurer balance (ether)</th>
+            <th>Withdraw funds</th>
+            </tr>`;
+            table.innerHTML = tableHeaders;
+
+            for (let c = 0; c < numFlightsInsured; c ++) {
+                let flightKey = await contract.getInsuredFlights(passengerAddress, c);
+                let flightInfo = await contract.getFlight(flightKey);
+
+                let airlineInfo = await contract.getAirline(flightInfo[7]);
+                let airlineName = airlineInfo[1];
+                let flightCode = flightInfo[0];
+                let departureDate = flightInfo[6];
+                let from = flightInfo[1];
+                let to = flightInfo[2];
+                let statCode = flightInfo[5];
+
+                let insurerBalance = await contract.getInsuranceBalance(passengerAddress, flightKey);
+                let insurerBalanceMod = await contract.web3.utils.fromWei(insurerBalance, "ether");
+
+                let tableRow = document.createElement("tr");
+                let tableData1 = document.createElement("td");
+                tableData1.innerHTML = airlineName;
+                let tableData2 = document.createElement("td");
+                tableData2.innerHTML = flightCode;
+                let tableData3 = document.createElement("td");
+                tableData3.innerHTML = from;
+                let tableData4 = document.createElement("td");
+                tableData4.innerHTML = to;
+                let tableData5 = document.createElement("td");
+                tableData5.innerHTML = new Date(Number(departureDate)).toGMTString();
+                let tableData6 = document.createElement("td");
+                tableData6.innerHTML = statCode;
+                let tableData7 = document.createElement("td");
+                tableData7.innerHTML = insurerBalanceMod;
+                let tableData8 = document.createElement("td");
+                let withdrawBtn = document.createElement("button");
+                withdrawBtn.innerHTML = "Withdraw funds";
+                withdrawBtn.addEventListener("click", async function() {
+                    if (insurerBalance != 0) {
+                        try {
+                            await contract.payOut(passengerAddress, flightKey, insurerBalance);
+                            alert(`Withdrawing funds for flight ${flightCode} insurance`);
+                        } catch(err) {
+                            console.log(err);
+                        }
+                    } else {
+                        alert("The user has no funds");
+                    }
+                });
+                tableData8.appendChild(withdrawBtn);
+                tableRow.appendChild(tableData1);
+                tableRow.appendChild(tableData2);
+                tableRow.appendChild(tableData3);
+                tableRow.appendChild(tableData4);
+                tableRow.appendChild(tableData5);
+                tableRow.appendChild(tableData6);
+                tableRow.appendChild(tableData7);
+                tableRow.appendChild(tableData8);
+                table.appendChild(tableRow);
+            }
+            insuredFlightsBox.appendChild(table);
+        }
+
+        // add the show insured flight function to a button
+        (async() => {
+            let showInsuredBtn = document.getElementById("showInsuredFlights");
+            showInsuredBtn.addEventListener("click", showInsuredFlights);
+        })();
 
         // add the fund airline function to a button
         (async() => {
@@ -345,13 +593,22 @@ import {flightCodes} from "./flightData.js";
             })
         })();
 
-
+        // (async() => {
+        //     let opStatPlaceholder = document.getElementById("opStatusPlaceholder");
+        //     try {
+        //         let opStatus = await contract.getOpStatus();
+        //         console.log(opStatus);
+        //         opStatPlaceholder.innerHTML = opStatus;
+        //     } catch(err) {
+        //         console.log(err);
+        //     }
+        // })();
 
         // Read transaction
-        contract.isOperational((error, result) => {
-            console.log(error,result);
-            display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
-        });
+        // contract.isOperational((error, result) => {
+        //     console.log(error,result);
+        //     display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
+        // });
 
 
         // show registered airlines

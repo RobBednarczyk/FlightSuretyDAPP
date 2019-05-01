@@ -44,12 +44,12 @@ contract FlightSuretyApp {
     *      This is used on all state changing functions to pause the contract in
     *      the event there is an issue that needs to be fixed
     */
-    modifier requireIsOperational()
+    /*modifier requireIsOperational()
     {
          // Modify to call data contract's status
         require(true, "Contract is currently not operational");
         _;  // All modifiers require an "_" which indicates where the function body will be added
-    }
+    }*/
 
     /**
     * @dev Modifier that requires the "ContractOwner" account to be the function caller
@@ -175,8 +175,8 @@ contract FlightSuretyApp {
         return flightSuretyData.getFlightByNum(flightNum);
     }
 
-    function insureFlight(bytes32 _flightHash) public {
-        flightSuretyData.insureFlight(_flightHash);
+    function insureFlight(string _flightCode, uint256 _departureDate) external {
+        flightSuretyData.insureFlight(_flightCode, _departureDate);
     }
 
     function buyInsurance(address _airlineAddress, uint departureDate, string memory flightCode) public payable {
@@ -193,6 +193,14 @@ contract FlightSuretyApp {
 
     function getInsured(bytes32 _flightHash, uint index) external returns(address) {
         return flightSuretyData.getInsured(_flightHash, index);
+    }
+
+    function getInsuredFlights(address _passengerAddress, uint _index) external view returns(bytes32) {
+        return flightSuretyData.getInsuredFlights(_passengerAddress, _index);
+    }
+
+    function getInsuredKeysLength(address _passengerAddress) external view returns(uint256) {
+        return flightSuretyData.getInsuredKeysLength(_passengerAddress);
     }
 
     function updateInsuredBalance(bytes32 _flightHash) internal {
@@ -221,7 +229,10 @@ contract FlightSuretyApp {
         bytes32 flightHash = getFlightKey(airline, flightCode, departureDate);
         // update the flight status code
         updateFlightStatus(flightHash, statusCode);
-        updateInsuredBalance(flightHash);
+        if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+            updateInsuredBalance(flightHash);
+        }
+
     }
 
 
@@ -348,7 +359,7 @@ contract FlightSuretyApp {
         if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
 
             // do not accept additional responses
-            // oracleResponses[key].isOpen = false;
+            oracleResponses[key].isOpen = false;
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
 
             // Handle flight status as appropriate
@@ -446,7 +457,8 @@ contract FlightSuretyData {
     function alreadyVoted(address _voter, address _airlineAddress) public view returns(bool);
     function getFlightKey(address airline, string memory flightCode, uint256 timestamp) pure public returns(bytes32);
     function registerFlight(string _flightCode, string _origin, string _destination, uint256 _departureDate) external;
-    function insureFlight(bytes32 _flightHash) external;
+    //function insureFlight(bytes32 _flightHash) external;
+    function insureFlight(string _flightCode, uint256 _departureDate) external;
     function isInsured(address _airlineAddress, address _passengerAddress, string _flightCode, uint departureDate) public view returns(bool);
     function getFlight(bytes32 _flightHash) external view returns(string memory, string memory, string memory, bool, bool, uint8, uint256, address);
     function getFlightByNum(uint flightNum) external view returns(string memory, string memory, string, bool, bool, uint8, uint256, address, address[]);
@@ -458,4 +470,6 @@ contract FlightSuretyData {
     function getInsured(bytes32 _flightHash, uint index) external returns(address);
     function updateInsuredBalance(bytes32 _flightHash) external;
     function payOut(bytes32 _flightHash, uint amount) external;
+    function getInsuredFlights(address _passengerAddress, uint index) external view returns(bytes32);
+    function getInsuredKeysLength(address _passengerAddress) external view returns(uint256);
 }
