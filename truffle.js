@@ -2,7 +2,7 @@ var HDWalletProvider = require("truffle-hdwallet-provider");
 // mnemonic - truffle develop
 //var mnemonic = "height clarify tiny cancel travel sauce debris strike fame swamp spoil damage";
 // mnemonic - ganache
-var mnemonic = "market fluid can wish magnet winter goddess fortune coast essay roof mule";
+var mnemonic = "dragon iron repair measure mind head scissors test certain seek place patch";
 
 module.exports = {
   networks: {

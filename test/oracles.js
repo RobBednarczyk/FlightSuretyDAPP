@@ -56,7 +56,7 @@ contract('Oracles', async (accounts) => {
       let fee = await instanceApp.REGISTRATION_FEE.call();
 
       for(let a=1; a<=TEST_ORACLES_COUNT; a++) {
-          await instanceApp.registerOracle({ from: accounts[a], value: fee });
+          await instanceApp.registerOracle({from: accounts[a], value: fee});
           let result = await instanceApp.getMyIndexes.call({from: accounts[a]});
           console.log(`Oracle Registered: ${result[0]}, ${result[1]}, ${result[2]}`);
       }
@@ -90,7 +90,7 @@ contract('Oracles', async (accounts) => {
       let departureDate = new Date(dateString).getTime();
       //departureDate = departureDate 1000;
       //console.log(departureDate);
-      await instanceApp.registerFlight("FR109", departureDate, {from:airline1});
+      await instanceApp.registerFlight("FR109", "WAW", "LON", departureDate, {from:airline1});
       let numFlights = await instanceApp.howManyFlights.call();
       //console.log(Number(numFlights));
       assert.equal(numFlights, 1);
@@ -99,10 +99,10 @@ contract('Oracles', async (accounts) => {
       // the flight code is correct
       assert.equal(flightInfo[0], "FR109");
       // the flight is registered but not insured yet
-      assert.equal(flightInfo[1], true);
-      assert.equal(flightInfo[2], false);
-      assert.equal(flightInfo[4], departureDate);
-      assert.equal(flightInfo[5], airline1);
+      assert.equal(flightInfo[3], true);
+      assert.equal(flightInfo[4], false);
+      assert.equal(flightInfo[6], departureDate);
+      assert.equal(flightInfo[7], airline1);
   });
 
   it('can request flight status', async () => {
